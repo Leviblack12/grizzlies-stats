@@ -64,12 +64,13 @@ const PITCH = [["IP","IP"],["ERA","ERA"],["SO","K"],["BB","BB"],["WHIP","WHIP"],
 
 function render(p){
   let body;
-  if(!p.hasStats){
+  const hasStats = p.has_stats ?? p.hasStats;
+  if(!hasStats){
     body = `<div class="empty-msg"><b>No stats yet.</b> Hasn't recorded a game this season.</div>`;
   } else if(!p.batted){
     body = `<div class="empty-msg"><b>Did not bat.</b> Appeared without a plate appearance.</div>`;
   } else {
-    const L=p.line;
+    const L = p.line || p;
     const slash = ["AVG","OBP","SLG","OPS"].map(k=>`<div class="c"><div class="v">${L[k]}</div><div class="l">${k}</div></div>`).join("");
     const row = KEY.map(([k,l])=>`<div class="stat"><div class="v">${L[k]}</div><div class="l">${l}</div></div>`).join("");
     body = `<div class="slash">${slash}</div><div class="row">${row}</div>`;

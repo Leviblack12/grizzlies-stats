@@ -89,7 +89,7 @@ async function boot(){
   let data = EMBEDDED;
   try { const r = await fetch("data.json"); if(r.ok) data = await r.json(); } catch(e){}
   if(id){
-    render(data.find(p=>String(p.player_id||p.id).startsWith(id)) || data[0]);
+    render(data.find(p=>String(p.player_id??p.id??"").startsWith(id)) || {has_stats:false,name:""});
   } else {
     const pick = document.getElementById("picker");
     const sel = document.getElementById("sel");

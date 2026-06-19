@@ -1,0 +1,6 @@
+gc_auth.json
+gc_profile/
+__pycache__/
+*.pyc
+.env
+*.token

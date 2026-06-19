@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MacStrength stats widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#111111; --line:#2a2a2a; --gold:#F5C02C; --white:#fff; --muted:#8a8a86;
+    --display:"Bebas Neue",Impact,sans-serif; --body:"Inter",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--black);color:var(--white);font-family:var(--body);-webkit-font-smoothing:antialiased}
+  .card{max-width:240px;margin:0 auto;border:1px solid var(--line);border-radius:8px;
+    padding:12px;background:var(--black)}
+
+  .slash{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin:0 0 10px}
+  .slash .c{background:var(--black);padding:8px 3px;text-align:center}
+  .slash .v{font-family:var(--display);font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+  .slash .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+  .row{display:flex;flex-wrap:wrap;gap:10px 12px;padding-top:2px;justify-content:center}
+  .stat{text-align:center;min-width:26px}
+  .stat .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+  .pitch{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  .pitch .lab{font-family:var(--display);font-size:14px;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px}
+
+  .empty-msg{padding:14px 2px;color:var(--muted);font-size:13px}
+  .empty-msg b{color:var(--white);font-weight:500}
+
+  #picker{margin:0 auto 12px;max-width:240px;display:none}
+  #picker select{width:100%;background:#1a1a1a;color:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:8px;font-family:var(--body);font-size:13px}
+  #picker .note{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div id="picker"><select id="sel"></select><div class="note">Preview only — hidden when embedded with ?id</div></div>
+<div class="card" id="card"></div>
+
+<script>
+const EMBEDDED = [
+ {id:"b6626216",num:"8",name:"Gavin Hanson",hasStats:true,batted:true,line:{GP:1,PA:4,AB:1,R:2,H:1,doubles:0,triples:0,HR:0,RBI:0,BB:3,SO:0,SB:0,AVG:"1.000",OBP:"1.000",SLG:"1.000",OPS:"2.000"},pitching:null},
+ {id:"f64c6eff",num:"7",name:"Paxton Hovde",hasStats:true,batted:true,line:{GP:1,PA:4,AB:2,R:1,H:1,doubles:0,triples:0,HR:0,RBI:2,BB:1,SO:1,SB:0,AVG:".500",OBP:".750",SLG:".500",OPS:"1.250"},pitching:null},
+ {id:"5786bf5a",num:"2",name:"Joey Santjer",hasStats:true,batted:true,line:{GP:1,PA:4,AB:4,R:0,H:2,doubles:0,triples:0,HR:0,RBI:1,BB:0,SO:0,SB:0,AVG:".500",OBP:".500",SLG:".500",OPS:"1.000"},pitching:null},
+ {id:"6aef4a1e",num:"9",name:"Penn Johnson",hasStats:true,batted:true,line:{GP:1,PA:4,AB:3,R:0,H:1,doubles:0,triples:0,HR:0,RBI:0,BB:0,SO:1,SB:0,AVG:".333",OBP:".500",SLG:".333",OPS:".833"},pitching:null},
+ {id:"d1cca483",num:"4",name:"Champ Waller",hasStats:true,batted:true,line:{GP:1,PA:4,AB:4,R:1,H:1,doubles:1,triples:0,HR:0,RBI:3,BB:0,SO:1,SB:0,AVG:".250",OBP:".250",SLG:".500",OPS:".750"},pitching:null},
+ {id:"58eb6c61",num:"21",name:"Joey Athmann",hasStats:true,batted:true,line:{GP:1,PA:4,AB:4,R:1,H:1,doubles:0,triples:0,HR:0,RBI:0,BB:0,SO:0,SB:1,AVG:".250",OBP:".250",SLG:".250",OPS:".500"},pitching:null},
+ {id:"4467d02f",num:"20",name:"John Pierce",hasStats:true,batted:true,line:{GP:1,PA:4,AB:4,R:1,H:1,doubles:0,triples:0,HR:0,RBI:0,BB:0,SO:1,SB:2,AVG:".250",OBP:".250",SLG:".250",OPS:".500"},pitching:null},
+ {id:"915ec431",num:"3",name:"James Brooks",hasStats:true,batted:true,line:{GP:1,PA:4,AB:3,R:1,H:0,doubles:0,triples:0,HR:0,RBI:0,BB:0,SO:3,SB:0,AVG:".000",OBP:".250",SLG:".000",OPS:".250"},pitching:{W:1,L:0,SV:0,IP:"7.0",H:2,R:1,ER:1,BB:2,SO:8,ERA:"1.00",WHIP:"0.57"}},
+ {id:"33db707e",num:"18",name:"Jackson Schrick",hasStats:true,batted:true,line:{GP:1,PA:4,AB:3,R:1,H:0,doubles:0,triples:0,HR:0,RBI:1,BB:0,SO:0,SB:1,AVG:".000",OBP:".000",SLG:".000",OPS:".000"},pitching:null},
+ {id:"a1c388bc",num:"15",name:"Brady Borchardt",hasStats:true,batted:false,line:{GP:1},pitching:null},
+ {id:"8e41f0ea",num:"6",name:"Weston Blevins",hasStats:false,batted:false,line:null,pitching:null},
+];
+
+const KEY = [["H","H"],["HR","HR"],["RBI","RBI"],["R","R"],["BB","BB"],["SO","K"],["SB","SB"]];
+const PITCH = [["IP","IP"],["ERA","ERA"],["SO","K"],["BB","BB"],["WHIP","WHIP"],["H","H"],["ER","ER"]];
+
+function render(p){
+  let body;
+  if(!p.hasStats){
+    body = `<div class="empty-msg"><b>No stats yet.</b> Hasn't recorded a game this season.</div>`;
+  } else if(!p.batted){
+    body = `<div class="empty-msg"><b>Did not bat.</b> Appeared without a plate appearance.</div>`;
+  } else {
+    const L=p.line;
+    const slash = ["AVG","OBP","SLG","OPS"].map(k=>`<div class="c"><div class="v">${L[k]}</div><div class="l">${k}</div></div>`).join("");
+    const row = KEY.map(([k,l])=>`<div class="stat"><div class="v">${L[k]}</div><div class="l">${l}</div></div>`).join("");
+    body = `<div class="slash">${slash}</div><div class="row">${row}</div>`;
+    if(p.pitching){
+      const P=p.pitching;
+      const pr = `<div class="stat"><div class="v">${P.W}-${P.L}</div><div class="l">W-L</div></div>` +
+        PITCH.map(([k,l])=>`<div class="stat"><div class="v">${P[k]}</div><div class="l">${l}</div></div>`).join("");
+      body += `<div class="pitch"><div class="lab">Pitching</div><div class="row">${pr}</div></div>`;
+    }
+  }
+  document.getElementById("card").innerHTML = body;
+}
+
+async function boot(){
+  const id = new URLSearchParams(location.search).get("id");
+  let data = EMBEDDED;
+  try { const r = await fetch("data.json"); if(r.ok) data = await r.json(); } catch(e){}
+  if(id){
+    render(data.find(p=>String(p.player_id||p.id).startsWith(id)) || data[0]);
+  } else {
+    const pick = document.getElementById("picker");
+    const sel = document.getElementById("sel");
+    data.forEach((p,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=(p.num||p.number?`#${p.num||p.number} `:"")+p.name; sel.appendChild(o); });
+    sel.onchange = ()=>render(data[sel.value]);
+    pick.style.display="block";
+    render(data[0]);
+  }
+}
+boot();
+</script>
+</body>
+</html>

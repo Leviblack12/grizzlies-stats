@@ -29,7 +29,7 @@ jobs:
         run: |
           # GC_AUTH (content of gc_auth.json) lets us restore the session.
           # xvfb-run provides a virtual display in case GC checks for headless.
-          GC_TOKEN="$(xvfb-run --auto-servernum python get_token.py)"
+          GC_TOKEN="$(xvfb-run --auto-servernum python get_token.py 2>&1 | grep '^ey')"
           export GC_TOKEN
           python run.py
 

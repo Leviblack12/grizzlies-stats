@@ -87,7 +87,7 @@ function render(p){
 async function boot(){
   const id = new URLSearchParams(location.search).get("id");
   let data = EMBEDDED;
-  try { const r = await fetch("data.json"); if(r.ok) data = await r.json(); } catch(e){}
+  try { const r = await fetch("data.json?t=" + Date.now()); if(r.ok) data = await r.json(); } catch(e){}
   if(id){
     render(data.find(p=>String(p.player_id??p.id??"").startsWith(id)) || {has_stats:false,name:""});
   } else {
